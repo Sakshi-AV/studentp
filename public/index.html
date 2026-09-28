@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ProjectNest | Student Project Management Portal</title>
+  <meta name="description" content="A portfolio-ready Student Project Management Portal with role permissions, interactive Kanban board, progress analytics, and mentor evaluations.">
+  <meta name="keywords" content="student projects, project management, kanban, mentor review, capstone portal">
+  <meta name="author" content="Student Project Portal Team">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Custom Stylesheets -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/kanban.css">
+</head>
+<body>
+
+  <!-- ==========================================================================
+       Top Navigation Header
+       ========================================================================== -->
+  <header class="app-header">
+    <div class="brand-container" id="brand-header-link">
+      <div class="brand-icon">
+        <i class="fa-solid fa-layer-group"></i>
+      </div>
+      <div>
+        <h1 class="brand-title">ProjectNest</h1>
+        <div class="brand-subtitle">Student Capstone Portal</div>
+      </div>
+    </div>
+
+    <div class="header-center">
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="global-search-input" class="search-input" placeholder="Search projects, tasks, or keywords..." aria-label="Search">
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <!-- Admin Link if Admin -->
+      <button id="nav-admin-link" class="btn-secondary" style="display: none; padding: 0.45rem 0.85rem; font-size: 0.82rem;">
+        <i class="fa-solid fa-shield-halved" style="color: var(--danger);"></i> Admin Console
+      </button>
+
+      <!-- Light / Dark Theme Toggle -->
+      <button id="theme-toggle-btn" class="btn-icon-toggle" aria-label="Toggle theme">
+        <i class="fa-solid fa-sun"></i>
+      </button>
+
+      <!-- Logged-in User Profile Badge -->
+      <div id="nav-user-badge" class="user-profile-badge" style="display: none;">
+        <img id="nav-user-avatar" class="user-avatar" src="" alt="Avatar">
+        <div class="user-info-text">
+          <span id="nav-user-name" class="user-name-text">Loading...</span>
+          <span id="nav-user-role" class="user-role-pill role-student">Student</span>
+        </div>
+        <button id="btn-logout" class="btn-icon-toggle" style="width: 28px; height: 28px; border: none; background: transparent; font-size: 0.85rem; margin-left: 0.25rem;" title="Sign Out">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i>
+        </button>
+      </div>
+
+      <!-- Guest Login Button -->
+      <button id="nav-login-btn" class="btn-secondary" onclick="App.showScreen('auth')" style="display: none;">
+        <i class="fa-solid fa-right-to-bracket"></i> Sign In
+      </button>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       Main Application Container (Views)
+       ========================================================================== -->
+  <main class="app-container">
+
+    <!-- ======================================================================
+         SCREEN 1: Authentication & Onboarding View
+         ====================================================================== -->
+    <section id="auth-view" class="view-screen">
+      <div class="auth-wrapper">
+        <div class="auth-hero-section">
+          <div class="auth-badge">
+            <i class="fa-solid fa-graduation-cap"></i> Academic Project Workspace
+          </div>
+          <h2 class="auth-hero-title">Empower Student <span>Innovation</span> & Mentorship.</h2>
+          <p class="auth-hero-desc">
+            A collaborative portal designed for student capstone teams, faculty advisors, and academic administrators. Track milestones, organize Kanban boards, and receive structured mentor feedback.
+          </p>
+
+          <div class="auth-features-list">
+            <div class="auth-feature-item">
+              <div class="auth-feature-icon"><i class="fa-solid fa-kanban"></i></div>
+              <div class="auth-feature-text">
+                <h4>Interactive Kanban Task Boards</h4>
+                <p>Drag, prioritize, and monitor sprint deliverables with real-time status updates.</p>
+              </div>
+            </div>
+            <div class="auth-feature-item">
+              <div class="auth-feature-icon"><i class="fa-solid fa-chalkboard-user"></i></div>
+              <div class="auth-feature-text">
+                <h4>Structured Faculty Feedback</h4>
+                <p>Dedicated mentor reviews and evaluation badges directly on milestone tasks.</p>
+              </div>
+            </div>
+            <div class="auth-feature-item">
+              <div class="auth-feature-icon"><i class="fa-solid fa-chart-pie"></i></div>
+              <div class="auth-feature-text">
+                <h4>Progress Analytics & Velocity</h4>
+                <p>Real-time visual completion charts and deadline countdown alerts.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="auth-card">
+          <div class="auth-tabs">
+            <button class="auth-tab-btn active" data-tab="login">Sign In</button>
+            <button class="auth-tab-btn" data-tab="register">Create Account</button>
+          </div>
+
+          <!-- Sign In Form -->
+          <form id="login-form">
+            <div class="form-group">
+              <label class="form-label" for="login-email">Campus Email</label>
+              <input type="email" id="login-email" class="form-control" placeholder="alex.student@campus.edu" required autocomplete="username">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="login-password">Password</label>
+              <input type="password" id="login-password" class="form-control" placeholder="••••••••••••" required autocomplete="current-password">
+            </div>
+            <button type="submit" class="btn-primary" style="margin-top: 0.5rem;">
+              <i class="fa-solid fa-arrow-right-to-bracket"></i> Sign In to Portal
+            </button>
+          </form>
+
+          <!-- Register Form -->
+          <form id="register-form" style="display: none;">
+            <div class="form-group">
+              <label class="form-label" for="reg-name">Full Name</label>
+              <input type="text" id="reg-name" class="form-control" placeholder="e.g. Jordan Lee" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="reg-email">Campus Email</label>
+              <input type="email" id="reg-email" class="form-control" placeholder="jordan@campus.edu" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="reg-password">Password (min 6 characters)</label>
+              <input type="password" id="reg-password" class="form-control" placeholder="••••••••" required>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+              <div class="form-group">
+                <label class="form-label" for="reg-role">Account Role</label>
+                <select id="reg-role" class="form-control">
+                  <option value="student">Student</option>
+                  <option value="mentor">Faculty Mentor</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="reg-dept">Department</label>
+                <input type="text" id="reg-dept" class="form-control" placeholder="Computer Science">
+              </div>
+            </div>
+            <button type="submit" class="btn-primary" style="margin-top: 0.5rem;">
+              <i class="fa-solid fa-user-plus"></i> Register Account
+            </button>
+          </form>
+
+          <!-- One-Click Demo Personas -->
+          <div class="demo-accounts-section">
+            <div class="demo-title">
+              <i class="fa-solid fa-bolt" style="color: var(--warning);"></i> 1-Click Instant Demo Evaluation
+            </div>
+            <div class="demo-buttons-grid">
+              <button class="btn-demo-persona" onclick="Auth.quickLoginAs('student')" title="Sign in as Alex Rivera (Student)">
+                <i class="fa-solid fa-user-graduate" style="color: #60A5FA;"></i>
+                <span>Student</span>
+                <small>Alex Rivera</small>
+              </button>
+              <button class="btn-demo-persona" onclick="Auth.quickLoginAs('mentor')" title="Sign in as Dr. Marcus Chen (Mentor)">
+                <i class="fa-solid fa-chalkboard-user" style="color: #C084FC;"></i>
+                <span>Mentor</span>
+                <small>Dr. Chen</small>
+              </button>
+              <button class="btn-demo-persona" onclick="Auth.quickLoginAs('admin')" title="Sign in as Sarah Jenkins (Admin)">
+                <i class="fa-solid fa-shield-halved" style="color: #FB7185;"></i>
+                <span>Admin</span>
+                <small>Sarah J.</small>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         SCREEN 2: Projects Overview & Analytics Dashboard
+         ====================================================================== -->
+    <section id="dashboard-view" class="view-screen">
+      <!-- Dashboard Top Header -->
+      <div class="dashboard-header">
+        <div class="dashboard-title-group">
+          <h2>Project Dashboard</h2>
+          <p>Monitor ongoing student projects, upcoming deliverables, and team sprint velocity.</p>
+        </div>
+        <div class="dashboard-actions">
+          <button id="btn-new-project" class="btn-primary" style="width: auto;">
+            <i class="fa-solid fa-plus"></i> New Project
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI Summary Cards -->
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-icon-box metric-icon-projects">
+            <i class="fa-solid fa-folder"></i>
+          </div>
+          <div class="metric-data">
+            <span id="metric-total-projects" class="metric-value">0</span>
+            <span class="metric-label">Active Projects</span>
+            <span class="metric-trend" style="color: var(--info);"><i class="fa-solid fa-layer-group"></i> All categories</span>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-icon-box metric-icon-tasks">
+            <i class="fa-solid fa-list-check"></i>
+          </div>
+          <div class="metric-data">
+            <span id="metric-active-tasks" class="metric-value">0</span>
+            <span class="metric-label">Tasks in Progress</span>
+            <span class="metric-trend" style="color: var(--warning);"><i class="fa-solid fa-clock"></i> Active sprint</span>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-icon-box metric-icon-progress">
+            <i class="fa-solid fa-chart-line"></i>
+          </div>
+          <div class="metric-data">
+            <span id="metric-avg-progress" class="metric-value">0%</span>
+            <span class="metric-label">Average Completion</span>
+            <span class="metric-trend" style="color: var(--success);"><i class="fa-solid fa-arrow-trend-up"></i> Capstone velocity</span>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-icon-box metric-icon-urgent">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+          </div>
+          <div class="metric-data">
+            <span id="metric-urgent-tasks" class="metric-value">0</span>
+            <span class="metric-label">Urgent / High Priority</span>
+            <span class="metric-trend" style="color: var(--danger);"><i class="fa-solid fa-fire"></i> Attention required</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Analytics Section (Canvas Charts) -->
+      <div class="analytics-section">
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <div>
+              <h3 class="chart-title">Capstone Projects Progress</h3>
+              <div class="chart-subtitle">Milestone completion rates across active projects</div>
+            </div>
+            <span class="user-role-pill role-student"><i class="fa-solid fa-bars-progress"></i> Real-time</span>
+          </div>
+          <div class="chart-canvas-wrapper">
+            <canvas id="projects-progress-canvas" style="width: 100%; height: 100%;"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <div>
+              <h3 class="chart-title">Task Distribution</h3>
+              <div class="chart-subtitle">Status breakdown of all tasks</div>
+            </div>
+            <span class="user-role-pill role-mentor"><i class="fa-solid fa-chart-pie"></i> Sprints</span>
+          </div>
+          <div class="chart-canvas-wrapper">
+            <canvas id="task-status-canvas" style="width: 100%; height: 100%;"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Toolbar: Filters & Categories -->
+      <div class="toolbar-section">
+        <div class="filter-pills">
+          <button class="filter-pill active" data-status="all">All Projects</button>
+          <button class="filter-pill" data-status="planning">Planning</button>
+          <button class="filter-pill" data-status="in_progress">In Progress</button>
+          <button class="filter-pill" data-status="review">Under Review</button>
+          <button class="filter-pill" data-status="completed">Completed</button>
+        </div>
+
+        <div class="toolbar-controls">
+          <label for="filter-category-select" style="font-size: 0.85rem; color: var(--text-muted);"><i class="fa-solid fa-filter"></i> Category:</label>
+          <select id="filter-category-select" class="select-filter">
+            <option value="all">All Fields</option>
+            <option value="Artificial Intelligence">Artificial Intelligence</option>
+            <option value="IoT & Embedded Systems">IoT & Embedded Systems</option>
+            <option value="Web Development">Web Development</option>
+            <option value="Cybersecurity & Web3">Cybersecurity & Web3</option>
+            <option value="General">General</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Projects Grid -->
+      <div id="projects-grid-container" class="projects-grid">
+        <!-- Rendered via Dashboard.renderProjects -->
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         SCREEN 3: Project Detail & Interactive Kanban Board
+         ====================================================================== -->
+    <section id="project-detail-view" class="view-screen">
+      <!-- Project Header Card -->
+      <div class="project-detail-header">
+        <div class="breadcrumb-nav">
+          <span class="breadcrumb-link" onclick="App.showScreen('dashboard')">
+            <i class="fa-solid fa-arrow-left"></i> Back to Projects
+          </span>
+          <span>/</span>
+          <span id="breadcrumb-project-name">Project Details</span>
+        </div>
+
+        <div class="project-hero-main">
+          <div class="project-title-area">
+            <div class="project-meta-badges">
+              <span id="project-detail-category" class="project-category-badge">Category</span>
+              <div style="display: flex; align-items: center; gap: 0.4rem;">
+                <label for="project-status-select" style="font-size: 0.78rem; font-weight: 600; color: var(--text-muted);">Status:</label>
+                <select id="project-status-select" class="select-filter" style="padding: 0.25rem 0.6rem; font-size: 0.8rem;">
+                  <option value="planning">Planning</option>
+                  <option value="in_progress">In Progress</option>
+                  <option value="review">Under Review</option>
+                  <option value="completed">Completed</option>
+                  <option value="on_hold">On Hold</option>
+                </select>
+              </div>
+            </div>
+            <h2 id="project-detail-title" class="project-detail-title">Project Title</h2>
+            <p id="project-detail-desc" class="project-detail-desc">Project description...</p>
+          </div>
+
+          <div class="project-action-buttons">
+            <button id="btn-header-add-task" class="btn-primary" style="width: auto;">
+              <i class="fa-solid fa-plus"></i> Add Task
+            </button>
+          </div>
+        </div>
+
+        <div class="project-hero-stats">
+          <div class="project-detail-progress">
+            <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 600;">
+              <span>Milestone Completion</span>
+              <span id="project-detail-progress-text">0% Completed</span>
+            </div>
+            <div class="progress-bar-bg" style="height: 10px;">
+              <div id="project-detail-progress-fill" class="progress-bar-fill" style="width: 0%;"></div>
+            </div>
+          </div>
+
+          <div id="project-mentor-display" class="mentor-assigned-card">
+            <!-- Mentor info populated via JS -->
+          </div>
+
+          <div style="display: flex; align-items: center; justify-content: flex-end; gap: 0.5rem; color: var(--text-muted); font-size: 0.82rem;">
+            <i class="fa-solid fa-handshake-angle" style="color: var(--primary-400);"></i>
+            <span>Capstone Collaboration</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4-Column Kanban Task Board -->
+      <div class="kanban-board-container">
+        <!-- 1. TO DO -->
+        <div class="kanban-column col-todo">
+          <div class="kanban-column-header">
+            <div class="column-title-group">
+              <span class="column-indicator"></span>
+              <span class="column-title">To Do</span>
+              <span id="count-col-todo" class="column-count-badge">0</span>
+            </div>
+            <button class="btn-add-task-quick" onclick="App.openModal('new-task-modal')" title="Add task to To Do">
+              <i class="fa-solid fa-plus"></i>
+            </button>
+          </div>
+          <div id="tasks-col-todo" class="kanban-tasks-list" data-status="todo">
+            <!-- Task cards -->
+          </div>
+        </div>
+
+        <!-- 2. IN PROGRESS -->
+        <div class="kanban-column col-progress">
+          <div class="kanban-column-header">
+            <div class="column-title-group">
+              <span class="column-indicator"></span>
+              <span class="column-title">In Progress</span>
+              <span id="count-col-progress" class="column-count-badge">0</span>
+            </div>
+            <button class="btn-add-task-quick" onclick="App.openModal('new-task-modal')" title="Add task to In Progress">
+              <i class="fa-solid fa-plus"></i>
+            </button>
+          </div>
+          <div id="tasks-col-progress" class="kanban-tasks-list" data-status="in_progress">
+            <!-- Task cards -->
+          </div>
+        </div>
+
+        <!-- 3. UNDER REVIEW -->
+        <div class="kanban-column col-review">
+          <div class="kanban-column-header">
+            <div class="column-title-group">
+              <span class="column-indicator"></span>
+              <span class="column-title">Under Review</span>
+              <span id="count-col-review" class="column-count-badge">0</span>
+            </div>
+            <button class="btn-add-task-quick" onclick="App.openModal('new-task-modal')" title="Add task to Review">
+              <i class="fa-solid fa-plus"></i>
+            </button>
+          </div>
+          <div id="tasks-col-review" class="kanban-tasks-list" data-status="review">
+            <!-- Task cards -->
+          </div>
+        </div>
+
+        <!-- 4. COMPLETED -->
+        <div class="kanban-column col-done">
+          <div class="kanban-column-header">
+            <div class="column-title-group">
+              <span class="column-indicator"></span>
+              <span class="column-title">Completed</span>
+              <span id="count-col-done" class="column-count-badge">0</span>
+            </div>
+            <button class="btn-add-task-quick" onclick="App.openModal('new-task-modal')" title="Add task to Completed">
+              <i class="fa-solid fa-plus"></i>
+            </button>
+          </div>
+          <div id="tasks-col-done" class="kanban-tasks-list" data-status="done">
+            <!-- Task cards -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         SCREEN 4: Administrator Management Console
+         ====================================================================== -->
+    <section id="admin-view" class="view-screen">
+      <div class="dashboard-header">
+        <div class="dashboard-title-group">
+          <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.4rem;">
+            <span class="admin-header-badge"><i class="fa-solid fa-shield-halved"></i> Administrator Privileges</span>
+          </div>
+          <h2>Portal Administration & User Management</h2>
+          <p>Manage user roles, faculty mentor authorizations, and review system-wide audit activity.</p>
+        </div>
+        <div>
+          <button class="btn-secondary" onclick="App.showScreen('dashboard')">
+            <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+          </button>
+        </div>
+      </div>
+
+      <!-- Admin KPI Stats -->
+      <div class="metrics-grid" style="margin-bottom: 2rem;">
+        <div class="metric-card">
+          <div class="metric-icon-box" style="background: rgba(59, 130, 246, 0.15); color: #60A5FA;">
+            <i class="fa-solid fa-user-graduate"></i>
+          </div>
+          <div class="metric-data">
+            <span id="admin-stat-students" class="metric-value">0</span>
+            <span class="metric-label">Registered Students</span>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-icon-box" style="background: rgba(139, 92, 246, 0.15); color: #C084FC;">
+            <i class="fa-solid fa-chalkboard-user"></i>
+          </div>
+          <div class="metric-data">
+            <span id="admin-stat-mentors" class="metric-value">0</span>
+            <span class="metric-label">Faculty Mentors</span>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-icon-box" style="background: rgba(16, 185, 129, 0.15); color: var(--success);">
+            <i class="fa-solid fa-folder-tree"></i>
+          </div>
+          <div class="metric-data">
+            <span id="admin-stat-projects" class="metric-value">0</span>
+            <span class="metric-label">Total Projects</span>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-icon-box" style="background: rgba(239, 68, 68, 0.15); color: var(--danger);">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+          </div>
+          <div class="metric-data">
+            <span id="admin-stat-overdue" class="metric-value">0</span>
+            <span class="metric-label">Overdue Tasks</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- User Directory Table -->
+      <h3 style="margin-bottom: 1rem; font-size: 1.2rem;">User Directory & Role Permissions</h3>
+      <div class="admin-users-table-container">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Department</th>
+              <th>System Role</th>
+              <th>Projects</th>
+              <th>Tasks Status</th>
+            </tr>
+          </thead>
+          <tbody id="admin-users-tbody">
+            <!-- Populated via Admin.renderUsersTable -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- System Activity Logs -->
+      <h3 style="margin-bottom: 1rem; font-size: 1.2rem;">System Audit Trail</h3>
+      <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-xl); padding: 1.5rem;" id="admin-activities-list">
+        <!-- Populated via Admin.renderActivities -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==========================================================================
+       MODALS
+       ========================================================================== -->
+
+  <!-- 1. New Project Modal -->
+  <div id="new-project-modal" class="modal-overlay">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-folder-plus" style="color: var(--primary-500); margin-right: 0.5rem;"></i> Create New Capstone Project</h3>
+        <button class="modal-close-btn">&times;</button>
+      </div>
+      <form id="new-project-form">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label" for="proj-title-input">Project Title *</label>
+            <input type="text" id="proj-title-input" class="form-control" placeholder="e.g. AI-Powered Autonomous Rover" required>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label" for="proj-category-input">Category</label>
+              <select id="proj-category-input" class="form-control">
+                <option value="Artificial Intelligence">Artificial Intelligence</option>
+                <option value="IoT & Embedded Systems">IoT & Embedded Systems</option>
+                <option value="Web Development">Web Development</option>
+                <option value="Cybersecurity & Web3">Cybersecurity & Web3</option>
+                <option value="General">General</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="proj-status-input">Initial Status</label>
+              <select id="proj-status-input" class="form-control">
+                <option value="planning">Planning</option>
+                <option value="in_progress">In Progress</option>
+                <option value="review">Under Review</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="proj-due-date-input">Target Deadline</label>
+            <input type="date" id="proj-due-date-input" class="form-control">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="proj-desc-input">Project Scope & Objectives</label>
+            <textarea id="proj-desc-input" class="form-control" rows="3" placeholder="Provide a summary of the project architecture and expected deliverables..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary btn-modal-cancel">Cancel</button>
+          <button type="submit" class="btn-primary" style="width: auto;">
+            <i class="fa-solid fa-check"></i> Create Project
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. New Task Modal -->
+  <div id="new-task-modal" class="modal-overlay">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-plus-circle" style="color: var(--primary-500); margin-right: 0.5rem;"></i> Add Milestone Task</h3>
+        <button class="modal-close-btn">&times;</button>
+      </div>
+      <form id="new-task-form">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label" for="task-title-input">Task Title *</label>
+            <input type="text" id="task-title-input" class="form-control" placeholder="e.g. Implement WebSocket Handshake" required>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label" for="task-status-input">Column Status</label>
+              <select id="task-status-input" class="form-control">
+                <option value="todo">To Do</option>
+                <option value="in_progress">In Progress</option>
+                <option value="review">Under Review</option>
+                <option value="done">Completed</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="task-priority-input">Priority Level</label>
+              <select id="task-priority-input" class="form-control">
+                <option value="low">Low</option>
+                <option value="medium" selected>Medium</option>
+                <option value="high">High</option>
+                <option value="urgent">Urgent</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label" for="task-due-date-input">Due Date</label>
+              <input type="date" id="task-due-date-input" class="form-control">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="task-hours-input">Estimated Hours</label>
+              <input type="number" id="task-hours-input" class="form-control" placeholder="8" min="0" step="0.5">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="task-desc-input">Task Details & Acceptance Criteria</label>
+            <textarea id="task-desc-input" class="form-control" rows="3" placeholder="Describe technical specifications or validation steps..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary btn-modal-cancel">Cancel</button>
+          <button type="submit" class="btn-primary" style="width: auto;">
+            <i class="fa-solid fa-check"></i> Add to Board
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 3. Task Detail & Discussion Modal -->
+  <div id="task-detail-modal" class="modal-overlay">
+    <div class="modal-container" style="max-width: 820px;">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-file-pen" style="color: var(--primary-500); margin-right: 0.5rem;"></i> Task Details & Mentorship Feedback</h3>
+        <button class="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="task-modal-id-holder">
+
+        <div class="task-modal-grid">
+          <!-- Left Column: Details & Comments -->
+          <div class="task-details-col">
+            <div class="form-group">
+              <label class="form-label" for="task-modal-title-input">Task Title</label>
+              <input type="text" id="task-modal-title-input" class="form-control" style="font-weight: 600; font-size: 1.05rem;">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="task-modal-desc-input">Description & Criteria</label>
+              <textarea id="task-modal-desc-input" class="form-control" rows="4"></textarea>
+            </div>
+
+            <!-- Comments & Mentor Feedback Section -->
+            <div class="comments-section">
+              <div style="display: flex; align-items: center; justify-content: space-between;">
+                <h4 style="font-size: 0.95rem; font-weight: 700;">
+                  <i class="fa-regular fa-comments"></i> Discussion & Mentorship Notes
+                </h4>
+              </div>
+
+              <!-- Comments List -->
+              <div id="task-comments-container" class="comments-list">
+                <!-- Populated via Comments.renderCommentsList -->
+              </div>
+
+              <!-- Comment Add Form -->
+              <div class="comment-form">
+                <textarea id="comment-input" class="form-control" rows="2" placeholder="Write a response, project update, or feedback..."></textarea>
+
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+                  <!-- Mentor Evaluation Checkbox (Shown if user is mentor/admin) -->
+                  <div id="mentor-feedback-toggle-box" class="mentor-feedback-toggle" style="display: none;">
+                    <input type="checkbox" id="is-mentor-feedback-check" style="cursor: pointer; width: 16px; height: 16px;">
+                    <label for="is-mentor-feedback-check" style="cursor: pointer;">
+                      <i class="fa-solid fa-award"></i> Mark as Official Faculty Evaluation Note
+                    </label>
+                  </div>
+
+                  <button type="button" id="btn-submit-comment" class="btn-secondary" style="padding: 0.45rem 1rem; font-size: 0.85rem; margin-left: auto;">
+                    <i class="fa-solid fa-paper-plane"></i> Post Comment
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Sidebar Metadata -->
+          <div class="task-sidebar-col">
+            <div class="form-group">
+              <label class="form-label" for="task-modal-status-select">Status</label>
+              <select id="task-modal-status-select" class="form-control">
+                <option value="todo">To Do</option>
+                <option value="in_progress">In Progress</option>
+                <option value="review">Under Review</option>
+                <option value="done">Completed</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="task-modal-priority-select">Priority</label>
+              <select id="task-modal-priority-select" class="form-control">
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+                <option value="urgent">Urgent</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="task-modal-assignee-select">Assignee</label>
+              <select id="task-modal-assignee-select" class="form-control">
+                <option value="">Unassigned</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="task-modal-due-date">Due Date</label>
+              <input type="date" id="task-modal-due-date" class="form-control">
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+              <div class="form-group">
+                <label class="form-label" for="task-modal-est-hours">Est. Hours</label>
+                <input type="number" id="task-modal-est-hours" class="form-control" step="0.5">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="task-modal-act-hours">Actual Hours</label>
+                <input type="number" id="task-modal-act-hours" class="form-control" step="0.5">
+              </div>
+            </div>
+
+            <div style="margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 0.5rem;">
+              <button type="button" id="btn-save-task-detail" class="btn-primary">
+                <i class="fa-solid fa-floppy-disk"></i> Save Changes
+              </button>
+              <button type="button" id="btn-delete-task" class="btn-secondary" style="color: var(--danger); justify-content: center;">
+                <i class="fa-solid fa-trash-can"></i> Delete Task
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- JavaScript Module Bundle -->
+  <script src="js/theme.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/chart.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/kanban.js"></script>
+  <script src="js/comments.js"></script>
+  <script src="js/admin.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
