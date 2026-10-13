@@ -1,12 +1,24 @@
 const express = require('express');
 const db = require('../config/db');
-const { authenticate, authorize } = require('../middleware/auth');
+const { authenticate, optionalAuth, authorize } = require('../middleware/auth');
 const { validateProjectInput } = require('../middleware/validator');
 
 const router = express.Router();
 
-// GET /api/projects - List projects with task completion metrics & filters
-router.get('/', async (req, res) => {
+// GET /api/projects/mentors - List faculty mentors for project assignment
+router.get('/mentors', async (req, res) => {
+  try {
+    const { rows } = await db.query(
+      `SELECT id, name, email, department, avatar_url FROM users WHERE role = 'mentor' ORDER BY name ASC`
+    );
+    return res.json({ success: true, count: rows.length, data: rows });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: 'Failed to fetch faculty mentors' });
+  }
+});
+
+// GET /api/projects - List projects with task completion metrics & role-based scoping
+router.get('/', optionalAuth, async (req, res) => {
   try {
     const { search, status, category, mentor_id, user_id } = req.query;
     let queryText = `
@@ -30,6 +42,34 @@ router.get('/', async (req, res) => {
     `;
     const params = [];
 
+    // Role-Based Isolation:
+    // If not authenticated, return empty list
+    if (!req.user) {
+      return res.json({ success: true, count: 0, data: [] });
+    }
+
+    // 1. New/Existing Student: ONLY show projects they created or joined as team member
+    if (req.user.role === 'student') {
+      params.push(req.user.id);
+      queryText += ` AND (p.created_by = $${params.length} OR p.id IN (SELECT project_id FROM project_members WHERE user_id = $${params.length}))`;
+    }
+    // 2. Faculty Mentor: ONLY show projects assigned to them for mentorship (or where they are a member)
+    else if (req.user.role === 'mentor') {
+      params.push(req.user.id);
+      queryText += ` AND (p.mentor_id = $${params.length} OR p.created_by = $${params.length} OR p.id IN (SELECT project_id FROM project_members WHERE user_id = $${params.length}))`;
+    }
+    // 3. Administrator: Full system oversight
+    else if (req.user.role === 'admin') {
+      if (mentor_id) {
+        params.push(mentor_id);
+        queryText += ` AND p.mentor_id = $${params.length}`;
+      }
+      if (user_id) {
+        params.push(user_id);
+        queryText += ` AND (p.created_by = $${params.length} OR p.id IN (SELECT project_id FROM project_members WHERE user_id = $${params.length}))`;
+      }
+    }
+
     if (search && search.trim() !== '') {
       params.push(`%${search.trim().toLowerCase()}%`);
       queryText += ` AND (LOWER(p.title) LIKE $${params.length} OR LOWER(p.description) LIKE $${params.length})`;
@@ -43,16 +83,6 @@ router.get('/', async (req, res) => {
     if (category && category !== 'all') {
       params.push(category);
       queryText += ` AND p.category = $${params.length}`;
-    }
-
-    if (mentor_id) {
-      params.push(mentor_id);
-      queryText += ` AND p.mentor_id = $${params.length}`;
-    }
-
-    if (user_id) {
-      params.push(user_id);
-      queryText += ` AND (p.created_by = $${params.length} OR p.id IN (SELECT project_id FROM project_members WHERE user_id = $${params.length}))`;
     }
 
     queryText += `

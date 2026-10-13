@@ -1,12 +1,12 @@
 const express = require('express');
 const db = require('../config/db');
-const { authenticate } = require('../middleware/auth');
+const { authenticate, optionalAuth } = require('../middleware/auth');
 const { validateTaskInput } = require('../middleware/validator');
 
 const router = express.Router();
 
-// GET /api/tasks - List tasks
-router.get('/', async (req, res) => {
+// GET /api/tasks - List tasks scoped by user permissions
+router.get('/', optionalAuth, async (req, res) => {
   try {
     const { project_id, status, priority, assigned_to } = req.query;
     let queryText = `
@@ -23,6 +23,21 @@ router.get('/', async (req, res) => {
       WHERE 1=1
     `;
     const params = [];
+
+    // Role-Based Task Scoping if not querying a specific project
+    if (!project_id) {
+      if (!req.user) {
+        return res.json({ success: true, count: 0, data: [] });
+      }
+
+      if (req.user.role === 'student') {
+        params.push(req.user.id);
+        queryText += ` AND (p.created_by = $${params.length} OR p.id IN (SELECT project_id FROM project_members WHERE user_id = $${params.length}))`;
+      } else if (req.user.role === 'mentor') {
+        params.push(req.user.id);
+        queryText += ` AND (p.mentor_id = $${params.length} OR p.created_by = $${params.length} OR p.id IN (SELECT project_id FROM project_members WHERE user_id = $${params.length}))`;
+      }
+    }
 
     if (project_id) {
       params.push(project_id);

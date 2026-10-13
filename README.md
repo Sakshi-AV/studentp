@@ -165,7 +165,7 @@ PORT=3000
 NODE_ENV=development
 JWT_SECRET=super_secret_student_portal_jwt_key_2026_secure
 JWT_EXPIRES_IN=7d
-DB_TYPE=sqlite
+DB_TYPE=postgres
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/studentp_db
 SQLITE_DB_PATH=./data/studentp.db
 ```
@@ -190,10 +190,29 @@ Open your browser and navigate to:
 👉 **`http://localhost:3000`**
 
 ### 5. Running Automated Tests
-Execute the end-to-end integration test suite:
+Execute the end-to-end integration test suites:
 ```bash
+# Test Faculty Mentor Dashboard & Supervision Workflows
+node test-mentor-workflows.js
+
+# Test Role-Based Scoping & Data Isolation
+node test-role-scoping.js
+
+# Test Full End-to-End Suite
 node test-e2e.js
 ```
+
+---
+
+## 🧑‍🏫 Faculty Mentor Supervision Hub
+
+ProjectNest includes a dedicated workspace tailored specifically for Faculty Advisors and Capstone Mentors:
+
+1. **Assigned Students Directory**: View all students enrolled across your mentored projects, inspect their individual task completion velocities, and message or assign tasks directly.
+2. **Mentored Projects Overview**: Track milestone progress percentages, lead student creators, deadlines, and direct Kanban access.
+3. **Task Assignment Workflow**: Create and directly assign new tasks and technical deliverables to students on your mentored projects.
+4. **Deliverables Review Queue**: Specialized queue for all tasks submitted into `Under Review` status. Mentors can **Approve & Mark Done** (with rubric grades/commendations) or **Request Revisions** (with actionable feedback).
+5. **Academic Feedback & Communication Hub**: Broadcast announcements, office hours notices, or project advice directly to student teams, visible on project discussion streams and activity logs.
 
 ---
 
@@ -204,6 +223,13 @@ node test-e2e.js
 - `POST /api/auth/login` — Authenticate and receive a JWT token.
 - `GET /api/auth/me` — Retrieve the currently authenticated user session.
 - `GET /api/auth/demo-accounts` — List pre-seeded demo user profiles.
+
+### Faculty Mentor Workflows (`/api/mentor`)
+- `GET /api/mentor/overview` — Aggregated KPI stats, mentored projects, assigned students, and review queue.
+- `GET /api/mentor/tasks` — Filterable consolidated task tracker across all mentored projects and students.
+- `POST /api/mentor/assign-task` — Create and assign a task to a student on a mentored project.
+- `POST /api/mentor/review-task` — Evaluate student deliverable (`approve` or `request_revision`) with rubric scores.
+- `POST /api/mentor/communicate` — Broadcast guidance or send mentorship advice to a student or project team.
 
 ### Projects
 - `GET /api/projects` — Query projects with filters (`status`, `category`, `search`).

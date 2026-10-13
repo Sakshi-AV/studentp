@@ -20,6 +20,7 @@
   <link rel="stylesheet" href="css/variables.css">
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/kanban.css">
+  <link rel="stylesheet" href="css/mentor.css">
 </head>
 <body>
 
@@ -45,6 +46,12 @@
     </div>
 
     <div class="header-actions">
+      <!-- Mentor Workspace Link -->
+      <button id="nav-mentor-link" class="btn-secondary" style="display: none; padding: 0.45rem 0.85rem; font-size: 0.82rem;">
+        <i class="fa-solid fa-chalkboard-user" style="color: #C084FC;"></i> Mentor Hub
+        <span id="nav-mentor-badge" class="badge-pulse" style="display: none;">0</span>
+      </button>
+
       <!-- Admin Link if Admin -->
       <button id="nav-admin-link" class="btn-secondary" style="display: none; padding: 0.45rem 0.85rem; font-size: 0.82rem;">
         <i class="fa-solid fa-shield-halved" style="color: var(--danger);"></i> Admin Console
@@ -206,7 +213,7 @@
       <div class="dashboard-header">
         <div class="dashboard-title-group">
           <h2>Project Dashboard</h2>
-          <p>Monitor ongoing student projects, upcoming deliverables, and team sprint velocity.</p>
+          <p id="dashboard-role-subtitle">Monitor ongoing student projects, upcoming deliverables, and team sprint velocity.</p>
         </div>
         <div class="dashboard-actions">
           <button id="btn-new-project" class="btn-primary" style="width: auto;">
@@ -542,6 +549,239 @@
       </div>
     </section>
 
+    <!-- ======================================================================
+         SCREEN 5: Faculty Mentor Workspace & Supervision Hub
+         ====================================================================== -->
+    <section id="mentor-view" class="view-screen">
+      <!-- Mentor Top Header -->
+      <div class="dashboard-header">
+        <div class="dashboard-title-group">
+          <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.4rem;">
+            <span class="mentor-header-badge"><i class="fa-solid fa-chalkboard-user"></i> Faculty Mentorship Hub</span>
+          </div>
+          <h2>Faculty Mentor Dashboard & Supervision</h2>
+          <p>Supervise assigned capstone projects, evaluate student deliverables, assign milestones, and provide structured academic feedback.</p>
+        </div>
+        <div class="mentor-actions-group">
+          <button class="btn-primary" style="width: auto;" onclick="Mentor.openAssignTaskModal()">
+            <i class="fa-solid fa-plus"></i> Assign Task
+          </button>
+          <button class="btn-secondary" style="width: auto;" onclick="Mentor.openCommunicateModal()">
+            <i class="fa-solid fa-bullhorn" style="color: #C084FC;"></i> Broadcast Guidance
+          </button>
+          <button class="btn-secondary" style="width: auto;" onclick="App.showScreen('dashboard')" title="View standard project grid">
+            <i class="fa-solid fa-layer-group"></i> Projects View
+          </button>
+          <button class="btn-icon-toggle" onclick="Mentor.loadMentorDashboard()" title="Refresh Dashboard">
+            <i class="fa-solid fa-arrows-rotate"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI Summary Cards -->
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-icon-box" style="background: rgba(139, 92, 246, 0.15); color: #C084FC;">
+            <i class="fa-solid fa-folder-tree"></i>
+          </div>
+          <div class="metric-data">
+            <span id="mentor-stat-projects" class="metric-value">0</span>
+            <span class="metric-label">Mentored Projects</span>
+            <span class="metric-trend" style="color: var(--primary-400);"><i class="fa-solid fa-graduation-cap"></i> Supervised teams</span>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-icon-box" style="background: rgba(59, 130, 246, 0.15); color: #60A5FA;">
+            <i class="fa-solid fa-user-graduate"></i>
+          </div>
+          <div class="metric-data">
+            <span id="mentor-stat-students" class="metric-value">0</span>
+            <span class="metric-label">Assigned Students</span>
+            <span class="metric-trend" style="color: var(--info);"><i class="fa-solid fa-users"></i> Active collaborators</span>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-icon-box" style="background: rgba(245, 158, 11, 0.15); color: #F59E0B;">
+            <i class="fa-solid fa-clipboard-check"></i>
+          </div>
+          <div class="metric-data">
+            <span id="mentor-stat-reviews" class="metric-value">0</span>
+            <span class="metric-label">Pending Reviews</span>
+            <span class="metric-trend" style="color: var(--warning);"><i class="fa-solid fa-bell"></i> Awaiting evaluation</span>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-icon-box" style="background: rgba(14, 165, 233, 0.15); color: var(--info);">
+            <i class="fa-solid fa-list-check"></i>
+          </div>
+          <div class="metric-data">
+            <span id="mentor-stat-tasks" class="metric-value">0</span>
+            <span class="metric-label">Active Deliverables</span>
+            <span class="metric-trend" style="color: var(--info);"><i class="fa-solid fa-clock"></i> In development</span>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-icon-box" style="background: rgba(16, 185, 129, 0.15); color: var(--success);">
+            <i class="fa-solid fa-chart-line"></i>
+          </div>
+          <div class="metric-data">
+            <span id="mentor-stat-velocity" class="metric-value">0%</span>
+            <span class="metric-label">Avg Milestone Velocity</span>
+            <span class="metric-trend" style="color: var(--success);"><i class="fa-solid fa-arrow-trend-up"></i> Completion rate</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mentor Navigation Tabs -->
+      <div class="mentor-tabs-nav">
+        <button class="mentor-tab-btn active" data-tab="projects">
+          <i class="fa-solid fa-folder"></i> Mentored Projects
+        </button>
+        <button class="mentor-tab-btn" data-tab="students">
+          <i class="fa-solid fa-user-graduate"></i> Assigned Students
+        </button>
+        <button class="mentor-tab-btn" data-tab="reviews">
+          <i class="fa-solid fa-clipboard-check"></i> Review Student Work
+          <span id="mentor-header-pending-badge" class="badge-pulse" style="display: none;">0</span>
+        </button>
+        <button class="mentor-tab-btn" data-tab="tasks">
+          <i class="fa-solid fa-list-check"></i> Monitor Task Progress
+        </button>
+        <button class="mentor-tab-btn" data-tab="feedback">
+          <i class="fa-regular fa-comments"></i> Guidance & Communication
+        </button>
+      </div>
+
+      <!-- Tab 1: Mentored Projects -->
+      <div id="pane-mentor-projects" class="mentor-tab-pane active">
+        <div id="mentor-projects-list" class="projects-grid">
+          <!-- Rendered via Mentor.renderMentoredProjects -->
+        </div>
+      </div>
+
+      <!-- Tab 2: Assigned Students -->
+      <div id="pane-mentor-students" class="mentor-tab-pane">
+        <div id="mentor-students-grid" class="students-grid">
+          <!-- Rendered via Mentor.renderAssignedStudents -->
+        </div>
+      </div>
+
+      <!-- Tab 3: Review Student Work -->
+      <div id="pane-mentor-reviews" class="mentor-tab-pane">
+        <div id="mentor-reviews-list" class="review-queue-list">
+          <!-- Rendered via Mentor.renderReviewQueue -->
+        </div>
+      </div>
+
+      <!-- Tab 4: Monitor Task Progress -->
+      <div id="pane-mentor-tasks" class="mentor-tab-pane">
+        <!-- Toolbar Filters -->
+        <div class="toolbar-section" style="margin-bottom: 1rem;">
+          <div class="toolbar-controls" style="width: 100%; justify-content: flex-start; flex-wrap: wrap; gap: 0.75rem;">
+            <div style="flex: 1; min-width: 200px;">
+              <input type="text" id="mentor-task-search-input" class="search-input" placeholder="Search tasks or students..." style="width: 100%;">
+            </div>
+            <select id="mentor-filter-status" class="select-filter">
+              <option value="all">All Statuses</option>
+              <option value="todo">To Do</option>
+              <option value="in_progress">In Progress</option>
+              <option value="review">Under Review</option>
+              <option value="done">Completed</option>
+            </select>
+            <select id="mentor-filter-project" class="select-filter">
+              <option value="">All Mentored Projects</option>
+            </select>
+            <select id="mentor-filter-student" class="select-filter">
+              <option value="">All Students</option>
+            </select>
+            <select id="mentor-filter-priority" class="select-filter">
+              <option value="all">All Priorities</option>
+              <option value="urgent">Urgent</option>
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+            </select>
+            <span id="mentor-tasks-count" style="font-size: 0.82rem; color: var(--text-muted); align-self: center; margin-left: auto;">0 tasks</span>
+          </div>
+        </div>
+
+        <div class="mentor-table-wrapper">
+          <table class="mentor-task-table">
+            <thead>
+              <tr>
+                <th>Task Title</th>
+                <th>Project</th>
+                <th>Assignee</th>
+                <th>Priority</th>
+                <th>Status</th>
+                <th>Due Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="mentor-tasks-tbody">
+              <!-- Rendered via Mentor.filterAndRenderTasks -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab 5: Guidance & Communication -->
+      <div id="pane-mentor-feedback" class="mentor-tab-pane">
+        <div class="communication-container">
+          <!-- Broadcast Composer Card -->
+          <div class="broadcast-composer-card">
+            <h3><i class="fa-solid fa-bullhorn" style="color: #C084FC;"></i> Send Guidance & Announcements</h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+              Broadcast sprint priorities, feedback notes, or meeting announcements directly to student capstone teams.
+            </p>
+            <form id="mentor-communicate-form">
+              <div class="form-group">
+                <label class="form-label" for="mentor-comm-project-select">Target Project *</label>
+                <select id="mentor-comm-project-select" class="form-control" required>
+                  <option value="">Select Mentored Project...</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="mentor-comm-student-select">Recipient</label>
+                <select id="mentor-comm-student-select" class="form-control">
+                  <option value="">Entire Project Team (Broadcast)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="mentor-comm-subject-input">Subject / Announcement Header</label>
+                <input type="text" id="mentor-comm-subject-input" class="form-control" placeholder="e.g. Sprint 3 Deliverable Check-in / Midterm Review Guidelines">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="mentor-comm-message-input">Mentorship Instructions & Guidance *</label>
+                <textarea id="mentor-comm-message-input" class="form-control" rows="5" placeholder="Write feedback, advice, or requirements for the students..." required></textarea>
+              </div>
+
+              <button type="submit" class="btn-primary" style="margin-top: 0.5rem;">
+                <i class="fa-regular fa-paper-plane"></i> Broadcast Mentorship Guidance
+              </button>
+            </form>
+          </div>
+
+          <!-- Feedbacks Stream -->
+          <div>
+            <h3 style="font-size: 1.15rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+              <i class="fa-solid fa-clock-rotate-left" style="color: var(--primary-400);"></i> Official Feedback Timeline
+            </h3>
+            <div id="mentor-feedbacks-stream" class="feedbacks-stream">
+              <!-- Rendered via Mentor.renderFeedbackStream -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
   </main>
 
   <!-- ==========================================================================
@@ -583,9 +823,17 @@
             </div>
           </div>
 
-          <div class="form-group">
-            <label class="form-label" for="proj-due-date-input">Target Deadline</label>
-            <input type="date" id="proj-due-date-input" class="form-control">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label" for="proj-mentor-select">Faculty Mentor</label>
+              <select id="proj-mentor-select" class="form-control">
+                <option value="">Select a Faculty Mentor...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="proj-due-date-input">Target Deadline</label>
+              <input type="date" id="proj-due-date-input" class="form-control">
+            </div>
           </div>
 
           <div class="form-group">
@@ -780,6 +1028,170 @@
     </div>
   </div>
 
+  <!-- ==========================================================================
+       MENTOR MODALS
+       ========================================================================== -->
+
+  <!-- 4. Mentor Assign Task Modal -->
+  <div id="mentor-assign-task-modal" class="modal-overlay">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-user-plus" style="color: #C084FC; margin-right: 0.5rem;"></i> Assign Task to Student</h3>
+        <button class="modal-close-btn">&times;</button>
+      </div>
+      <form id="mentor-assign-task-form">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label" for="mentor-task-project-select">Mentored Project *</label>
+            <select id="mentor-task-project-select" class="form-control" required>
+              <option value="">Select Mentored Project...</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="mentor-task-student-select">Assign to Student</label>
+            <select id="mentor-task-student-select" class="form-control">
+              <option value="">Select Student Assignee...</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="mentor-task-title-input">Deliverable / Task Title *</label>
+            <input type="text" id="mentor-task-title-input" class="form-control" placeholder="e.g. Conduct sensor calibration flight test" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="mentor-task-desc-input">Task Requirements & Guidelines</label>
+            <textarea id="mentor-task-desc-input" class="form-control" rows="3" placeholder="Specify technical requirements, acceptance criteria, or mentor recommendations..."></textarea>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label" for="mentor-task-priority-select">Priority</label>
+              <select id="mentor-task-priority-select" class="form-control">
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+                <option value="urgent">Urgent</option>
+                <option value="low">Low</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="mentor-task-due-input">Due Date</label>
+              <input type="date" id="mentor-task-due-input" class="form-control">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="mentor-task-hours-input">Estimated Hours</label>
+            <input type="number" id="mentor-task-hours-input" class="form-control" placeholder="e.g. 10" step="0.5">
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary btn-modal-cancel">Cancel</button>
+          <button type="submit" class="btn-primary" style="width: auto;">
+            <i class="fa-solid fa-plus"></i> Assign Task
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 5. Mentor Review Deliverable Modal -->
+  <div id="mentor-review-modal" class="modal-overlay">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-clipboard-check" style="color: var(--warning); margin-right: 0.5rem;"></i> Evaluate Student Deliverable</h3>
+        <button class="modal-close-btn">&times;</button>
+      </div>
+      <form id="mentor-review-form">
+        <input type="hidden" id="review-modal-task-id" value="">
+        <div class="modal-body">
+          <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1.25rem;">
+            <div style="font-size: 0.76rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Task Deliverable</div>
+            <h4 id="review-modal-task-title" style="font-size: 1.15rem; margin: 0.25rem 0 0.5rem 0;">Task Title</h4>
+            <div style="display: flex; gap: 1rem; font-size: 0.82rem; color: var(--text-secondary);">
+              <span>Project: <strong id="review-modal-project">Project</strong></span>
+              <span>•</span>
+              <span>Student: <strong id="review-modal-assignee">Student</strong></span>
+            </div>
+            <p id="review-modal-desc" style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem; line-height: 1.5;"></p>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="review-modal-action">Evaluation Decision *</label>
+            <select id="review-modal-action" class="form-control" required>
+              <option value="approve">Approve & Mark Completed (Done)</option>
+              <option value="request_revision">Request Revisions (Move back to In Progress)</option>
+              <option value="feedback_only">Keep Under Review & Add Notes</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="review-modal-score">Rubric Score / Grade (Optional)</label>
+            <input type="text" id="review-modal-score" class="form-control" placeholder="e.g. Grade: A (95%) or Meets All Criteria">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="review-modal-feedback">Faculty Academic Feedback *</label>
+            <textarea id="review-modal-feedback" class="form-control" rows="4" placeholder="Provide constructive remarks, commendations, or specific revision requirements..." required></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary btn-modal-cancel">Cancel</button>
+          <button type="submit" class="btn-primary" style="width: auto;">
+            <i class="fa-solid fa-paper-plane"></i> Submit Evaluation
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 6. Mentor Direct Communication Modal -->
+  <div id="mentor-communicate-modal" class="modal-overlay">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-bullhorn" style="color: #C084FC; margin-right: 0.5rem;"></i> Send Mentorship Guidance</h3>
+        <button class="modal-close-btn">&times;</button>
+      </div>
+      <form id="mentor-communicate-modal-form">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label" for="modal-comm-project-select">Target Project *</label>
+            <select id="modal-comm-project-select" class="form-control" required>
+              <option value="">Select Mentored Project...</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="modal-comm-student-select">Recipient</label>
+            <select id="modal-comm-student-select" class="form-control">
+              <option value="">Entire Project Team (Broadcast)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="modal-comm-subject-input">Subject / Title</label>
+            <input type="text" id="modal-comm-subject-input" class="form-control" placeholder="e.g. Guidance on Sprint Milestone">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="modal-comm-message-input">Message Content *</label>
+            <textarea id="modal-comm-message-input" class="form-control" rows="4" placeholder="Enter instructions, advice, or requirements for the students..." required></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary btn-modal-cancel">Cancel</button>
+          <button type="submit" class="btn-primary" style="width: auto;">
+            <i class="fa-regular fa-paper-plane"></i> Send
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Toast Notification Container -->
   <div id="toast-container" class="toast-container"></div>
 
@@ -792,6 +1204,7 @@
   <script src="js/kanban.js"></script>
   <script src="js/comments.js"></script>
   <script src="js/admin.js"></script>
+  <script src="js/mentor.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

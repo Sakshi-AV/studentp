@@ -8,13 +8,20 @@ const App = (function () {
   function init() {
     setupEventListeners();
     setupModals();
+    if (window.Mentor && window.Mentor.setupFilterListeners) {
+      window.Mentor.setupFilterListeners();
+    }
     bootstrapApp();
   }
 
   async function bootstrapApp() {
     const user = await Auth.checkSession();
     if (user) {
-      showScreen('dashboard');
+      if (user.role === 'mentor') {
+        showScreen('mentor');
+      } else {
+        showScreen('dashboard');
+      }
     } else {
       showScreen('auth');
     }
@@ -36,6 +43,8 @@ const App = (function () {
       Dashboard.loadDashboard();
     } else if (screenName === 'admin') {
       Admin.loadAdminPanel();
+    } else if (screenName === 'mentor') {
+      if (window.Mentor) Mentor.loadMentorDashboard();
     }
   }
 
@@ -86,8 +95,13 @@ const App = (function () {
         const password = document.getElementById('login-password').value;
         try {
           await Auth.login(email, password);
-          showToast(`Welcome back, ${Auth.getUser().name}!`, 'success');
-          showScreen('dashboard');
+          const u = Auth.getUser();
+          showToast(`Welcome back, ${u.name}!`, 'success');
+          if (u.role === 'mentor') {
+            showScreen('mentor');
+          } else {
+            showScreen('dashboard');
+          }
         } catch (err) {
           showToast(err.message, 'error');
         }
@@ -156,6 +170,7 @@ const App = (function () {
         const category = document.getElementById('proj-category-input').value;
         const status = document.getElementById('proj-status-input').value;
         const due_date = document.getElementById('proj-due-date-input').value;
+        const mentor_id = document.getElementById('proj-mentor-select')?.value || null;
         const description = document.getElementById('proj-desc-input').value;
 
         try {
@@ -163,6 +178,7 @@ const App = (function () {
             title,
             category,
             status,
+            mentor_id: mentor_id ? parseInt(mentor_id, 10) : null,
             due_date: due_date || null,
             description,
           });
@@ -242,6 +258,28 @@ const App = (function () {
     if (navAdminLink) {
       navAdminLink.addEventListener('click', () => {
         showScreen('admin');
+      });
+    }
+
+    // Mentor link in nav
+    const navMentorLink = document.getElementById('nav-mentor-link');
+    if (navMentorLink) {
+      navMentorLink.addEventListener('click', () => {
+        showScreen('mentor');
+      });
+    }
+
+    // Smart breadcrumb navigation
+    const breadcrumbBack = document.querySelector('.breadcrumb-link');
+    if (breadcrumbBack) {
+      breadcrumbBack.addEventListener('click', (e) => {
+        e.preventDefault();
+        const user = Auth.getUser();
+        if (user && user.role === 'mentor') {
+          showScreen('mentor');
+        } else {
+          showScreen('dashboard');
+        }
       });
     }
   }

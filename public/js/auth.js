@@ -74,7 +74,11 @@ const Auth = (function () {
 
       if (window.App) {
         window.App.showToast(`Logged in as ${currentUser.name} (${currentUser.role})`, 'success');
-        window.App.showScreen('dashboard');
+        if (currentUser.role === 'mentor') {
+          window.App.showScreen('mentor');
+        } else {
+          window.App.showScreen('dashboard');
+        }
       }
     } catch (err) {
       if (window.App) window.App.showToast(`Demo sign-in failed: ${err.message}`, 'error');
@@ -85,6 +89,7 @@ const Auth = (function () {
     const navUserBadge = document.getElementById('nav-user-badge');
     const navLoginBtn = document.getElementById('nav-login-btn');
     const navAdminBtn = document.getElementById('nav-admin-link');
+    const navMentorBtn = document.getElementById('nav-mentor-link');
 
     if (currentUser) {
       if (navUserBadge) {
@@ -98,6 +103,11 @@ const Auth = (function () {
       }
       if (navLoginBtn) navLoginBtn.style.display = 'none';
 
+      // Show mentor portal button if mentor or admin
+      if (navMentorBtn) {
+        navMentorBtn.style.display = (currentUser.role === 'mentor' || currentUser.role === 'admin') ? 'inline-flex' : 'none';
+      }
+
       // Show admin portal button if admin
       if (navAdminBtn) {
         navAdminBtn.style.display = currentUser.role === 'admin' ? 'inline-flex' : 'none';
@@ -106,6 +116,7 @@ const Auth = (function () {
       if (navUserBadge) navUserBadge.style.display = 'none';
       if (navLoginBtn) navLoginBtn.style.display = 'inline-flex';
       if (navAdminBtn) navAdminBtn.style.display = 'none';
+      if (navMentorBtn) navMentorBtn.style.display = 'none';
     }
   }
 

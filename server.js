@@ -15,6 +15,7 @@ const projectRoutes = require('./src/routes/projectRoutes');
 const taskRoutes = require('./src/routes/taskRoutes');
 const commentRoutes = require('./src/routes/commentRoutes');
 const adminRoutes = require('./src/routes/adminRoutes');
+const mentorRoutes = require('./src/routes/mentorRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -44,6 +45,7 @@ app.use('/api/projects', projectRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/comments', commentRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/mentor', mentorRoutes);
 
 // Fallback SPA routing to index.html for non-API routes
 app.use((req, res, next) => {

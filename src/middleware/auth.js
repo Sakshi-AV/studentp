@@ -40,6 +40,26 @@ async function authenticate(req, res, next) {
   }
 }
 
+async function optionalAuth(req, res, next) {
+  try {
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.split(' ')[1];
+      const decoded = jwt.verify(token, JWT_SECRET);
+      const { rows } = await db.query(
+        'SELECT id, name, email, role, department, avatar_url FROM users WHERE id = $1',
+        [decoded.id]
+      );
+      if (rows.length > 0) {
+        req.user = rows[0];
+      }
+    }
+  } catch (error) {
+    // Ignore invalid token in optionalAuth
+  }
+  next();
+}
+
 function authorize(allowedRoles = []) {
   return (req, res, next) => {
     if (!req.user) {
@@ -63,6 +83,7 @@ function authorize(allowedRoles = []) {
 
 module.exports = {
   authenticate,
+  optionalAuth,
   authorize,
   JWT_SECRET,
 };

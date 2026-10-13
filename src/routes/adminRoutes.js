@@ -96,7 +96,7 @@ router.get('/stats', async (req, res) => {
       `),
       db.query(`
         SELECT COUNT(*) as total_comments,
-               COUNT(CASE WHEN is_mentor_feedback = 1 OR is_mentor_feedback = TRUE THEN 1 END) as mentor_reviews
+               COUNT(CASE WHEN is_mentor_feedback = true THEN 1 END) as mentor_reviews
         FROM comments
       `),
     ]);

@@ -79,7 +79,7 @@ async function runTests() {
     assert(me.status === 200 && me.data.data.user.role === 'student', 'Auth /me identifies authenticated user role correctly');
 
     // 5. Fetch Projects List
-    const projectsRes = await apiRequest('GET', '/projects');
+    const projectsRes = await apiRequest('GET', '/projects', null, studentToken);
     assert(projectsRes.status === 200 && projectsRes.data.data.length > 0, `Projects list returns seeded capstone projects (Found: ${projectsRes.data.data.length})`);
 
     const firstProject = projectsRes.data.data[0];

@@ -10,10 +10,36 @@ const Dashboard = (function () {
 
   async function loadDashboard() {
     try {
+      const user = window.Auth ? window.Auth.getUser() : null;
+
+      // Update role subtitle
+      const subtitleEl = document.getElementById('dashboard-role-subtitle');
+      if (subtitleEl && user) {
+        if (user.role === 'student') {
+          subtitleEl.innerHTML = `<i class="fa-solid fa-user-graduate" style="color: #60A5FA;"></i> Showing your capstone projects & assignments.`;
+        } else if (user.role === 'mentor') {
+          subtitleEl.innerHTML = `<i class="fa-solid fa-chalkboard-user" style="color: #C084FC;"></i> Showing projects assigned to you for faculty mentorship.`;
+        } else if (user.role === 'admin') {
+          subtitleEl.innerHTML = `<i class="fa-solid fa-shield-halved" style="color: #FB7185;"></i> System administrator view: showing all campus projects.`;
+        }
+      }
+
+      // Load faculty mentors list for project creation
+      try {
+        const mentorsRes = await API.get('/projects/mentors');
+        const mentorSelect = document.getElementById('proj-mentor-select');
+        if (mentorSelect && mentorsRes.data) {
+          mentorSelect.innerHTML = `<option value="">Select a Faculty Mentor (Optional)...</option>` +
+            mentorsRes.data.map((m) => `<option value="${m.id}">${escapeHtml(m.name)} - ${escapeHtml(m.department || 'Faculty')}</option>`).join('');
+        }
+      } catch (e) {
+        // Mentors load error handled gracefully
+      }
+
       const res = await API.get('/projects');
       projectsList = res.data || [];
 
-      // Also fetch all tasks for metrics and status chart
+      // Also fetch tasks scoped to current user for metrics and status chart
       const tasksRes = await API.get('/tasks');
       const allTasks = tasksRes.data || [];
 
@@ -85,12 +111,28 @@ const Dashboard = (function () {
     const container = document.getElementById('projects-grid-container');
     if (!container) return;
 
+    const user = window.Auth ? window.Auth.getUser() : null;
+
     if (projects.length === 0) {
+      let emptyTitle = 'No projects found';
+      let emptyMsg = 'Try adjusting your filters or create a new student project.';
+      let emptyIcon = 'fa-solid fa-folder-open';
+
+      if (user && user.role === 'student') {
+        emptyTitle = 'No Projects Yet';
+        emptyMsg = 'Welcome to your portal! You currently have no active projects. Click "+ New Project" above to create your first capstone project and assign a faculty mentor.';
+        emptyIcon = 'fa-solid fa-graduation-cap';
+      } else if (user && user.role === 'mentor') {
+        emptyTitle = 'No Projects Assigned';
+        emptyMsg = 'You currently have no capstone projects assigned to you for faculty supervision. When students select you as their mentor, their projects will appear here.';
+        emptyIcon = 'fa-solid fa-chalkboard-user';
+      }
+
       container.innerHTML = `
-        <div style="grid-column: 1 / -1; text-align: center; padding: 3rem 1rem; color: var(--text-muted); background: var(--bg-surface); border: 1px dashed var(--border-subtle); border-radius: var(--radius-lg);">
-          <i class="fa-solid fa-folder-open" style="font-size: 2.5rem; margin-bottom: 1rem; color: var(--primary-400);"></i>
-          <h3>No projects found</h3>
-          <p style="font-size: 0.9rem; margin-top: 0.4rem;">Try adjusting your filters or create a new student project.</p>
+        <div style="grid-column: 1 / -1; text-align: center; padding: 3.5rem 1.5rem; color: var(--text-muted); background: var(--bg-surface); border: 1px dashed var(--border-subtle); border-radius: var(--radius-lg);">
+          <i class="${emptyIcon}" style="font-size: 2.8rem; margin-bottom: 1rem; color: var(--primary-400);"></i>
+          <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary);">${emptyTitle}</h3>
+          <p style="font-size: 0.92rem; margin-top: 0.5rem; max-width: 500px; margin-left: auto; margin-right: auto; line-height: 1.6;">${emptyMsg}</p>
         </div>
       `;
       return;
